@@ -4,6 +4,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import joblib
 import numpy as np
+import seaborn as sns
 
 # Load and clean data
 data = pd.read_csv("data.csv")
@@ -11,12 +12,24 @@ data.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
 data['Date'] = pd.to_datetime(data['Date'], format='%b %d, %Y')
 data['Volume'] = data['Volume'].str.replace(',', '').astype(float)
 price_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
+data.head(10)
+data.shape
+data.info()
+data.describe()
 data[price_columns] = data[price_columns].apply(pd.to_numeric, errors='coerce')
 
+from sklearn.preprocessing import MinMaxScaler
+mm=MinMaxScaler()
+for i in price_columns:
+    data[i]=mm.fit_transform(data[[i]])
+data.head()
 # Drop rows with missing values
 data = data.dropna()
+# sns.pairplot(data)
+sns.histplot(data=data,x='Close')
+sns.lineplot(data=data,x=data.index,y='Close')
 
-# Select features and target
+# Select features 
 X = data[['Open', 'High', 'Low', 'Volume']]
 y = data['Close']
 
@@ -44,18 +57,6 @@ plt.ylabel('Predicted Stock Prices')
 plt.title('Actual vs Predicted Stock Prices')
 plt.grid(True)
 plt.show()
-
-# Plotting residuals
-# residuals = y_test - y_pred
-# plt.figure(figsize=(10, 6))
-# plt.scatter(y_pred, residuals, color='blue', edgecolor='k', alpha=0.6)
-# plt.axhline(y=0, color='red', linestyle='--', linewidth=2)
-# plt.xlabel('Predicted Stock Prices')
-# plt.ylabel('Residuals')
-# plt.title('Residuals vs Predicted Stock Prices')
-# plt.grid(True)
-# plt.show()
-
 
 # Evaluate the model
 mse = mean_squared_error(y_test, y_pred)
